@@ -4,13 +4,19 @@ import 'package:flutter_shop/widgets/cart_item.dart';
 import '../providers/cart.dart';
 import 'package:provider/provider.dart';
 
-class CartScreeen extends StatelessWidget {
+class CartScreeen extends StatefulWidget {
   static const routeName = '/cart';
+
+  @override
+  _CartScreeenState createState() => _CartScreeenState();
+}
+
+class _CartScreeenState extends State<CartScreeen> {
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<Cart>(context);
     final order = Provider.of<Orders>(context, listen: false);
-
+    var _isLoading = false;
     return Scaffold(
       appBar: AppBar(
         title: Text("your card"),
@@ -41,15 +47,29 @@ class CartScreeen extends StatelessWidget {
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
                   TextButton(
-                      onPressed: () {
-                        order.addOrder(
-                            cart.items.values.toList(), cart.totalAmount);
-                        cart.clear();
-                      },
+                      onPressed: (cart.totalAmount <= 0 || _isLoading)
+                          ? null
+                          : () async {
+                              setState(() {
+                                _isLoading = true;
+                                print("is loading true");
+                              });
+
+                              await order.addOrder(
+                                  cart.items.values.toList(), cart.totalAmount);
+                              setState(() {
+                                _isLoading = false;
+                              });
+                              cart.clear();
+                            },
                       style: TextButton.styleFrom(
                         primary: Theme.of(context).primaryColor, // foreground
                       ),
-                      child: Text('ORDER NOW'))
+                      child: _isLoading
+                          ? Padding(
+                              padding: EdgeInsets.all(10),
+                              child: CircularProgressIndicator())
+                          : Text('ORDER NOW'))
                 ],
               ),
             ),
