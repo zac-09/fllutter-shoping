@@ -30,6 +30,26 @@ class Orders with ChangeNotifier {
     final response = await http.get(
       Uri.parse(url),
     );
+    final List<OrderItem> loadedOrders = [];
+    final extratedData = json.decode(response.body) as Map<String, dynamic>;
+    // if (extratedData == null) {
+    //   return;
+    // }
+    extratedData.forEach((orderId, OrderData) {
+      loadedOrders.add(OrderItem(
+          id: orderId,
+          amount: OrderData['amount'],
+          products: (OrderData['products'] as List<dynamic>)
+              .map((item) => CartItem(
+                  id: DateTime.parse(item['id']),
+                  title: item['title'],
+                  quantity: int.parse(item['quantity']),
+                  price: double.parse(item['price'])))
+              .toList(),
+          dateTime: DateTime.parse(OrderData['dateTime'])));
+    });
+    _orders = loadedOrders.toList();
+    notifyListeners();
   }
 
   Future<void> addOrder(List<CartItem> cartProduts, double total) async {
