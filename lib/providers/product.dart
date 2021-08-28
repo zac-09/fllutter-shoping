@@ -16,11 +16,10 @@ class Product with ChangeNotifier {
       @required this.description,
       @required this.imageUrl,
       @required this.price,
-      this.isFavorite = false})
-      : assert(id != null);
-  Future<void> toggleFavorite() async {
+      this.isFavorite = false});
+  Future<void> toggleFavorite(String token) async {
     var url =
-        "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json";
+        "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json?auth=$token";
     final oldStatus = isFavorite;
 
     isFavorite = !isFavorite;

@@ -24,9 +24,12 @@ class Orders with ChangeNotifier {
     return [..._orders];
   }
 
+  final String authToken;
+  Orders(this.authToken, this._orders);
+
   Future<void> fetchAndSetOrders() async {
-    const url =
-        "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/orders.json";
+    final url =
+        "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/orders.json?auth=$authToken";
     final response = await http.get(
       Uri.parse(url),
     );
@@ -64,8 +67,8 @@ class Orders with ChangeNotifier {
               })
           .toList();
       print(products);
-      const url =
-          "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/orders.json";
+      final url =
+          "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/orders.json?auth=$authToken";
       final response = await http.post(Uri.parse(url),
           body: json.encode({
             "amount": total,
