@@ -7,7 +7,8 @@ import 'dart:convert';
 class Products with ChangeNotifier {
   List<Product> _items = [];
   final String authToken;
-  Products(this.authToken, this._items);
+  final String userId;
+  Products(this.authToken, this.userId, this._items);
   // var _showFavoritesOnly = false;
   List<Product> get items {
     return [..._items];
@@ -31,9 +32,11 @@ class Products with ChangeNotifier {
   //   notifyListeners();
   // }
 
-  Future<void> fetchAndSetProducts() async {
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    final filterString =
+        filterByUser ? "orderBy='creatorId'&equalTo='$userId'" : "";
     final url =
-        "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/products.json?auth=$authToken";
+        "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/products.json?auth=$authToken&$filterString";
     final List<Product> loadedProducts = [];
 
     try {
@@ -41,13 +44,17 @@ class Products with ChangeNotifier {
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       if (extractedData == null) return;
 
+      final favorites = await http.get(Uri.parse(
+          "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/userFavorites/$userId.json?auth=$authToken"));
+      final favoriteData = json.decode(favorites.body);
+
       extractedData.forEach((ProdId, prodData) {
         loadedProducts.add(Product(
           id: ProdId,
           title: prodData['title'],
           description: prodData['description'],
           price: prodData['price'],
-          isFavorite: prodData['isFavorite'],
+          isFavorite: favoriteData ? false : favoriteData[ProdId] ?? false,
           imageUrl: prodData['imageUrl'],
         ));
       });
@@ -69,7 +76,8 @@ class Products with ChangeNotifier {
             "title": product.title,
             "price": product.price,
             "imageUrl": product.imageUrl,
-            'isFavorite': product.isFavorite
+            'isFavorite': product.isFavorite,
+            'creatorId': userId
           }));
 
       final newProduct = Product(

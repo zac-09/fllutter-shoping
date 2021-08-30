@@ -17,17 +17,17 @@ class Product with ChangeNotifier {
       @required this.imageUrl,
       @required this.price,
       this.isFavorite = false});
-  Future<void> toggleFavorite(String token) async {
+  Future<void> toggleFavorite(String token, String userId) async {
     var url =
-        "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/products/$id.json?auth=$token";
+        "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/userFavorites/$userId/$id.json?auth=$token";
     final oldStatus = isFavorite;
 
     isFavorite = !isFavorite;
     notifyListeners();
     try {
-      final response = await http.patch(Uri.parse(url),
+      final response = await http.put(Uri.parse(url),
           body: json.encode({
-            'isFavorite': isFavorite,
+            isFavorite,
           }));
       if (response.statusCode >= 400) {
         isFavorite = oldStatus;
