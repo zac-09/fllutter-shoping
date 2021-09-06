@@ -64,7 +64,11 @@ class Auth with ChangeNotifier {
       print("saved data");
       print(userData);
       await prefs.setString('userData', userData);
+      print("data successfully saved");
     } catch (err) {
+      print("err while saving");
+      print(err);
+
       throw err;
     }
   }
@@ -78,24 +82,16 @@ class Auth with ChangeNotifier {
   }
 
   Future<bool> tryAutoLogin() async {
-    print("trying auto login");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    print("trying shared prefs");
-
-    if (prefs.containsKey("userData")) {
-      print("returned false user data");
-
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey('userData')) {
       return false;
     }
-    final extractedUserData =
-        prefs.getString("userData") as Map<String, Object>;
-    print("trying ext data");
-
+    final extractedUserData = json
+        .decode(prefs.getString('userData').toString()) as Map<String, Object>;
     final expiryDate =
-        DateTime.parse(extractedUserData["expiryDate"].toString());
-    if (expiryDate.isBefore(DateTime.now())) {
-      print("returned false expiry");
+        DateTime.parse(extractedUserData['expiryDate'].toString());
 
+    if (expiryDate.isBefore(DateTime.now())) {
       return false;
     }
     _token = extractedUserData['token'].toString();
@@ -103,11 +99,10 @@ class Auth with ChangeNotifier {
     _expiryDate = expiryDate;
     notifyListeners();
     _autoLogout();
-    print("returned true");
     return true;
   }
 
-  void logout() {
+  void logout() async {
     _token = null;
     _userId = null;
     _expiryDate = null;
@@ -116,6 +111,9 @@ class Auth with ChangeNotifier {
       _authTimer = null;
     }
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    // prefs.remove('userData');
+    prefs.clear();
   }
 
   void _autoLogout() {

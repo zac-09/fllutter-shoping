@@ -21,14 +21,19 @@ class Product with ChangeNotifier {
     var url =
         "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/userFavorites/$userId/$id.json?auth=$token";
     final oldStatus = isFavorite;
-
+    print("perfoming call");
     isFavorite = !isFavorite;
     notifyListeners();
     try {
+      print("inside try");
+      print(isFavorite);
+
       final response = await http.put(Uri.parse(url),
           body: json.encode({
-            isFavorite,
+            "isFavorite": isFavorite,
           }));
+      print("done with res");
+
       if (response.statusCode >= 400) {
         isFavorite = oldStatus;
         notifyListeners();
@@ -36,6 +41,8 @@ class Product with ChangeNotifier {
     } catch (err) {
       isFavorite = oldStatus;
       notifyListeners();
+      print("err occured");
+      print(err);
     }
   }
 }

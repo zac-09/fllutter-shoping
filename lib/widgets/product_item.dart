@@ -24,24 +24,29 @@ class ProductItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
         child: GestureDetector(
-          onTap: () {
-            Navigator.of(context).pushNamed(ProductDetailScreen.routeName,
-                arguments: product.id);
-          },
-          child: Image.network(
-            product.imageUrl as String,
-            fit: BoxFit.cover,
-            height: 30,
-          ),
-        ),
+            onTap: () {
+              Navigator.of(context).pushNamed(ProductDetailScreen.routeName,
+                  arguments: product.id);
+            },
+            child: Hero(
+              tag: product.id.toString(),
+              child: FadeInImage(
+                placeholder:
+                    AssetImage('assets/images/product-placeholder.png'),
+                image: NetworkImage(
+                  product.imageUrl as String,
+                ),
+                fit: BoxFit.cover,
+              ),
+            )),
         footer: GridTileBar(
           backgroundColor: Colors.black87,
           leading: IconButton(
             icon: Icon(
                 product.isFavorite ? Icons.favorite : Icons.favorite_border),
             color: Theme.of(context).accentColor,
-            onPressed: () {
-              product.toggleFavorite(authData.token, authData.userId);
+            onPressed: () async {
+              await product.toggleFavorite(authData.token, authData.userId);
             },
           ),
           title: Text(

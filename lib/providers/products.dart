@@ -41,20 +41,26 @@ class Products with ChangeNotifier {
 
     try {
       final response = await http.get(Uri.parse(url));
-      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+
+      var extractedData = json.decode(response.body);
+
       if (extractedData == null) return;
 
       final favorites = await http.get(Uri.parse(
           "https://flutter-shop-36738-default-rtdb.europe-west1.firebasedatabase.app/userFavorites/$userId.json?auth=$authToken"));
-      final favoriteData = json.decode(favorites.body);
+      var favoriteData = json.decode(favorites.body);
 
-      extractedData.forEach((ProdId, prodData) {
+      extractedData.forEach((prodId, prodData) {
         loadedProducts.add(Product(
-          id: ProdId,
+          id: prodId,
           title: prodData['title'],
           description: prodData['description'],
           price: prodData['price'],
-          isFavorite: favoriteData ? false : favoriteData[ProdId] ?? false,
+          isFavorite: favoriteData == null
+              ? false
+              : favoriteData[prodId] != null
+                  ? favoriteData[prodId]["isFavorite"]
+                  : false,
           imageUrl: prodData['imageUrl'],
         ));
       });
